@@ -3,16 +3,22 @@
 pipeline {
   agent any
   stages {
-    stage('Compile') { steps { compileApp() } }
-    stage('Unit Test') { steps { runUnitTests() } }
-    stage('Scan SonarQube') { steps { scanSonar() } }
+    stage('Compile') {
+      steps { compileApp() }
+    }
+    stage('Unit Test') {
+      steps { runUnitTests() }
+    }
+    stage('Scan SonarQube') {
+      steps { scanSonar("${env.SONAR_HOST}") }
+    }
     stage('Deploy Nexus') {
       when { anyOf { branch 'uat/*'; branch 'main' } }
-      steps { deployNexus() }
+      steps { deployNexus("${env.NEXUS_REGISTRY}") }
     }
     stage('Deploy Application') {
       when { anyOf { branch 'uat/*'; branch 'main' } }
-      steps { deployApp(env.BRANCH_NAME) }
+      steps { deployApp(env.BRANCH_NAME, "${env.NEXUS_REGISTRY}") }
     }
     stage('Check Health') {
       when { anyOf { branch 'uat/*'; branch 'main' } }
