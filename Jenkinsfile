@@ -25,9 +25,18 @@ pipeline {
       steps {
         script {
           def port = env.BRANCH_NAME == 'main' ? '8083' : '8084'
-          sh "sleep 15 && curl -f http://localhost:${port}/actuator/health || exit 1"
+          sh "sleep 15 && curl -f http://${env.APP_TARGET_IP}:${port}/actuator/health || exit 1"
         }
       }
     }
+  }
+  
+  post {
+      success {
+          slackSend(color: 'good', message: "Build Successful: ${env.JOB_NAME} [${env.BUILD_NUMBER}]")
+      }
+      failure {
+          slackSend(color: 'danger', message: "Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]")
+      }
   }
 }
